@@ -1,7 +1,7 @@
 """
 Adverse Event Prevalence Analysis Script
 
-This script performs comprehensive adverse event prevalence analyses across different
+This script performs adverse event prevalence analyses across different
 disease cohorts, comorbidities, and drug exposures. Configuration for specific analyses
 is defined in configurations.py.
 """
