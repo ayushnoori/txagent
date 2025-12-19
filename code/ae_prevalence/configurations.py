@@ -17,6 +17,16 @@ The following keys are supported:
   be analyzed. Each name must have a corresponding definition in
   `groups/adverse_effects.csv`.
 
+- positive_controls (list[str]): OPTIONAL. A list of one or more adverse event
+  names to be analyzed as positive controls. Each name must have a corresponding
+  definition in `groups/adverse_effects.csv`. These are processed identically to
+  `aes` but are separated in configuration for organizational purposes.
+
+- negative_controls (list[str]): OPTIONAL. A list of one or more adverse event
+  names to be analyzed as negative controls. Each name must have a corresponding
+  definition in `groups/adverse_effects.csv`. These are processed identically to
+  `aes` but are separated in configuration for organizational purposes.
+
 - drug_group_name (str): OPTIONAL. A custom name for the drug group for cleaner
   labels in plots and outputs. If omitted, the list of drug names is used.
 
@@ -55,7 +65,7 @@ CONFIGURATIONS = [
         "drugs": ["atenolol", "metoprolol", "propranolol", "bisoprolol", "carvedilol", "labetalol", "timolol", "oxprenolol", "pindolol"],
         "drug_group_name": "beta-blocker",
         "aes": ["acute kidney failure", "unspecified acute kidney failure", "hyperkalemia", "cardiac dysrhythmia"],
-        "enabled": False,
+        "enabled": True,
     },
     # Success
     {
@@ -64,8 +74,8 @@ CONFIGURATIONS = [
         "drugs": ["hydrochlorothiazide", "indapamide", "furosemide", "spironolactone", "eplerenone", "amiloride", "triamterene"],
         "drug_group_name": "diuretic",
         "aes": ["squamous cell carcinoma", "non-melanoma skin cancer"],
-        "negative_controls": ["corneal abrasion"],
-        "enabled": False,
+        "negative_controls": ["corneal abrasion", "gingivitis", "insect bite"],
+        "enabled": True,
     },
     # Failure
     {
@@ -83,7 +93,7 @@ CONFIGURATIONS = [
         "drugs": ["sitagliptin", "saxagliptin", "linagliptin", "vildagliptin"],
         "drug_group_name": "DPP-4 inhibitor",
         "aes": ["hepatocellular carcinoma"],
-        "enabled": False,
+        "enabled": True,
     },
     # Failure: tinidazole is used to treat bacterial vaginosis
     {
@@ -100,7 +110,7 @@ CONFIGURATIONS = [
         "drugs": ["salmeterol", "formoterol", "indacaterol", "olodaterol"],
         "drug_group_name": "long-acting beta-2 agonist",
         "aes": ["stroke"],
-        "enabled": False,
+        "enabled": True,
     },
     # Success for RF, not pancreatitis
     # Pancreatitis OR success, prevalence failure
@@ -109,7 +119,7 @@ CONFIGURATIONS = [
         "comorbidity": "chronic kidney disease",
         "drugs": ["metformin"],
         "aes": ["acute pancreatitis", "respiratory failure"],
-        "enabled": False,
+        "enabled": True,
     },
     # Failure
     {
@@ -137,7 +147,7 @@ CONFIGURATIONS = [
         "drugs": ["atorvastatin", "simvastatin", "rosuvastatin", "pravastatin", "lovastatin", "fluvastatin", "cerivastatin"],
         "drug_group_name": "statin",
         "aes": ["liver failure"],
-        "enabled": False,
+        "enabled": True,
     },
     # Positive control: failure
     {
@@ -155,7 +165,7 @@ CONFIGURATIONS = [
         "drugs": ["captopril", "enalapril", "ramipril", "benazepril", "fosinopril", "cilazapril"],
         "drug_group_name": "ACE inhibitor",
         "aes": ["acute kidney failure", "hyperkalemia"],
-        "enabled": False,
+        "enabled": True,
     },
     # Positive control: weak success
     {
@@ -163,7 +173,7 @@ CONFIGURATIONS = [
         "comorbidity": "chronic kidney disease",
         "drugs": ["metformin"],
         "aes": ["acidosis"],
-        "enabled": False,
+        "enabled": True,
     },
     # Positive control: weak success
     {
@@ -172,7 +182,7 @@ CONFIGURATIONS = [
         "drugs": ["atorvastatin", "simvastatin", "rosuvastatin", "pravastatin", "lovastatin", "fluvastatin", "cerivastatin"],
         "drug_group_name": "statin",
         "aes": ["rhabdomyolysis"],
-        "enabled": False,
+        "enabled": True,
     },
     # Positive control: success
     {
@@ -181,7 +191,7 @@ CONFIGURATIONS = [
         "drugs": ["salbutamol", "terbutaline", "salmeterol", "formoterol", "indacaterol", "olodaterol"],
         "drug_group_name": "beta-2 agonist",
         "aes": ["angina"],
-        "enabled": False,
+        "enabled": True,
     },
     # Negative control: failure
     {

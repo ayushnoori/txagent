@@ -45,7 +45,7 @@ ROOT_DIR = Path("//10.100.117.220/Research_Archive$/Archive/R01/R01-Ayush/txagen
 RESULTS_DIR = ROOT_DIR / "results"
 DATA_DIR = ROOT_DIR / "data"
 GROUPS_DIR = ROOT_DIR / "code" / "groups"
-WINDOWS = [30, 90, None]
+WINDOWS = [30, 90, 365, 1825, None]
 
 # --- Helper Functions ---
 
@@ -133,6 +133,11 @@ def smart_save_results(new_df: pd.DataFrame, file_path: Path, ae_column: str = "
     
     if not file_path.exists():
         # No existing file, just save
+        sort_columns = [ae_column]
+        if "window" in new_df.columns:
+            sort_columns.append("window")
+        if sort_columns:
+            new_df = new_df.sort_values(sort_columns).reset_index(drop=True)
         new_df.to_csv(file_path, index=False)
         console.print(f"  [bold green]Saved[/bold green] {file_path.name} (new file, {len(new_df)} rows)")
         return
@@ -143,6 +148,11 @@ def smart_save_results(new_df: pd.DataFrame, file_path: Path, ae_column: str = "
         
         if existing_df.empty:
             # Existing file is empty, just save new data
+            sort_columns = [ae_column]
+            if "window" in new_df.columns:
+                sort_columns.append("window")
+            if sort_columns:
+                new_df = new_df.sort_values(sort_columns).reset_index(drop=True)
             new_df.to_csv(file_path, index=False)
             console.print(f"  [bold green]Saved[/bold green] {file_path.name} (replaced empty file, {len(new_df)} rows)")
             return
@@ -159,9 +169,11 @@ def smart_save_results(new_df: pd.DataFrame, file_path: Path, ae_column: str = "
         # Combine: kept rows + new rows
         combined_df = pd.concat([to_keep, new_df], ignore_index=True)
         
-        # Sort by adverse_event for consistency
-        if ae_column in combined_df.columns:
-            combined_df = combined_df.sort_values(ae_column).reset_index(drop=True)
+        # Sort by adverse_event and window for consistency
+        sort_columns = [ae_column]
+        if "window" in combined_df.columns:
+            sort_columns.append("window")
+        combined_df = combined_df.sort_values(sort_columns).reset_index(drop=True)
         
         # Save combined data
         combined_df.to_csv(file_path, index=False)
@@ -402,7 +414,7 @@ def calculate_adjusted_odds_ratios(con: duckdb.DuckDBPyConnection, adverse_event
             # Manually advance the progress bar after all windows for an AE are done
             progress.advance(ae_task)
 
-    return pd.DataFrame(all_results), model_summaries
+    return pd.DataFrame(all_results).sort_values(["adverse_event", "window"]).reset_index(drop=True), model_summaries
 
 def calculate_prevalence_stats(con: duckdb.DuckDBPyConnection, config: dict, adverse_events: list) -> pd.DataFrame:
     """Calculates AE prevalence across three sequentially defined cohorts."""
@@ -558,13 +570,27 @@ def process_configuration(config: dict, con: duckdb.DuckDBPyConnection, group_df
     else:
         drug_label = "Drug (C)" if len(config['drugs']) == 1 else "Drugs (C)"
         content.append(f"  {drug_label}: ", style="green"); content.append(f"{', '.join(config['drugs'])}\n")
-        
-    content.append("  Adverse Events (E): ", style="green"); content.append(f"{', '.join(config['aes'])}")
+    
+    # Read in AEs, positive controls, and negative controls separately
+    aes = config.get("aes", [])
+    positive_controls = config.get("positive_controls", [])
+    negative_controls = config.get("negative_controls", [])
+    
+    # Print them out separately
+    if aes:
+        content.append("  Adverse Events (E): ", style="green"); content.append(f"{', '.join(aes)}\n")
+    if positive_controls:
+        content.append("  Positive Controls: ", style="cyan"); content.append(f"{', '.join(positive_controls)}\n")
+    if negative_controls:
+        content.append("  Negative Controls: ", style="yellow"); content.append(f"{', '.join(negative_controls)}\n")
+    
     console.print(Panel(content, title=title, border_style="cyan", title_align="left"))
     
     # === Step 1: Load and Validate Selections ===
     console.print(Panel("Step 1: Load and Validate Selections", title_align="left", border_style="blue"))
-    disease, comorbidity, drugs, aes = config["disease"], config["comorbidity"], config["drugs"], config["aes"]
+    disease, comorbidity, drugs = config["disease"], config["comorbidity"], config["drugs"]
+    # Combine all AEs for processing
+    aes = aes + positive_controls + negative_controls
     sel_disease, sel_comorb = [disease.strip().casefold()], [comorbidity.strip().casefold()]
     sel_drugs, sel_aes = [d.strip().casefold() for d in drugs], [a.strip().casefold() for a in aes]
     sel_confounders = [c.strip().casefold() for c in config.get("confounders", [])]

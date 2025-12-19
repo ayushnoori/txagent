@@ -39,6 +39,10 @@ RESULTS_DIR = Path("results/ae_prevalence")
 # Define the output directory for the final plot.
 PLOT_OUTPUT_DIR = RESULTS_DIR / "plots"
 
+# Define the default target window for adverse events.
+# TARGET_WINDOW = "any_after_index"
+TARGET_WINDOW = "365d"
+
 # --- Define the list of results to include in the forest plot ---
 # Each dictionary specifies one analysis to find and plot.
 PLOTS_TO_GENERATE: List[Dict[str, Any]] = [
@@ -116,6 +120,24 @@ POSITIVE_CONTROLS: List[Dict[str, Any]] = [
 
 # Define negative control analyses
 NEGATIVE_CONTROLS: List[Dict[str, Any]] = [
+    {
+        "disease": "hypertension",
+        "comorbidity": "gout",
+        "drug_group_name": "diuretic",
+        "adverse_event": "corneal abrasion",
+    },
+    {
+        "disease": "hypertension",
+        "comorbidity": "gout",
+        "drug_group_name": "diuretic",
+        "adverse_event": "gingivitis",
+    },
+    {
+        "disease": "hypertension",
+        "comorbidity": "gout",
+        "drug_group_name": "diuretic",
+        "adverse_event": "insect bite",
+    },
     # {
     #     "disease": "hypertension",
     #     "comorbidity": "chronic kidney disease",
@@ -358,7 +380,7 @@ def main():
                         continue
 
                     target_ae = config["adverse_event"].lower().replace("_", " ")
-                    target_window = config.get("window", "any_after_index")
+                    target_window = config.get("window", TARGET_WINDOW)
 
                     required_cols = {"adverse_event", "window", details['or_col'], "ci95_low", "ci95_high"}
                     if not required_cols.issubset(df.columns):
