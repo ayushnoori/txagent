@@ -138,6 +138,42 @@ NEGATIVE_CONTROLS: List[Dict[str, Any]] = [
         "drug_group_name": "diuretic",
         "adverse_event": "insect bite",
     },
+    {
+        "disease": "hypertension",
+        "comorbidity": "gout",
+        "drug_group_name": "beta-blocker",
+        "adverse_event": "corneal abrasion",
+    },
+    {
+        "disease": "hypertension",
+        "comorbidity": "gout",
+        "drug_group_name": "beta-blocker",
+        "adverse_event": "gingivitis",
+    },
+    {
+        "disease": "hypertension",
+        "comorbidity": "gout",
+        "drug_group_name": "beta-blocker",
+        "adverse_event": "insect bite",
+    },
+    {
+        "disease": "hyperlipidemia",
+        "comorbidity": "hypothyroidism",
+        "drug_group_name": "statin",
+        "adverse_event": "corneal abrasion",
+    },
+    {
+        "disease": "hyperlipidemia",
+        "comorbidity": "hypothyroidism",
+        "drug_group_name": "statin",
+        "adverse_event": "gingivitis",
+    },
+    {
+        "disease": "hyperlipidemia",
+        "comorbidity": "hypothyroidism",
+        "drug_group_name": "statin",
+        "adverse_event": "insect bite",
+    },
     # {
     #     "disease": "hypertension",
     #     "comorbidity": "chronic kidney disease",

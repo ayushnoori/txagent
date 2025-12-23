@@ -521,7 +521,7 @@ def generate_plots(prevalence_results: pd.DataFrame, pop_ae_df: pd.DataFrame, co
 
     for ae, g in track(plot_data.groupby("adverse_event", sort=True), description="Generating plots..."):
         g = g.sort_values("cohort_standard")
-        fig, ax = plt.subplots(figsize=(5, 4)) # Slightly wider and taller for better spacing
+        fig, ax = plt.subplots(figsize=(5, 4))
         x = np.arange(len(g))
         
         # Prepare data for plotting and labeling
@@ -530,8 +530,6 @@ def generate_plots(prevalence_results: pd.DataFrame, pop_ae_df: pd.DataFrame, co
         percentages = g["prevalence_pct"].astype(float).values
         
         bars = ax.bar(x, percentages, zorder=3, color=bar_colors, edgecolor="black")
-        
-        # Call the new add_value_labels function with all necessary data
         add_value_labels(ax, bars, numerators, denominators, percentages)
         ax.set_xticks(x)
         ax.set_xticklabels([format_cohort_label(c) for c in g["cohort_standard"].astype(str)], ha="center")
