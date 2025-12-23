@@ -31,6 +31,7 @@ from rich.table import Table
 from rich.text import Text
 
 from configurations import CONFIGURATIONS
+from cohort_plots import generate_bar_plots, plot_drug_distribution, plot_follow_up_time
 
 plt.rcParams['font.sans-serif'] = 'Arial'
 
@@ -45,7 +46,7 @@ ROOT_DIR = Path("//10.100.117.220/Research_Archive$/Archive/R01/R01-Ayush/txagen
 RESULTS_DIR = ROOT_DIR / "results"
 DATA_DIR = ROOT_DIR / "data"
 GROUPS_DIR = ROOT_DIR / "code" / "groups"
-WINDOWS = [30, 90, 365, 1825, None]
+WINDOWS = [90, 365, 1825, None]
 
 # --- Helper Functions ---
 
@@ -459,100 +460,6 @@ def calculate_prevalence_stats(con: duckdb.DuckDBPyConnection, config: dict, adv
 
     return pd.DataFrame(rows)
 
-def generate_plots(prevalence_results: pd.DataFrame, pop_ae_df: pd.DataFrame, config: dict, save_dir: Path):
-    """Generates and saves bar plots for AE prevalence."""
-    console.print(Panel("Step 6: Generate and Save Plots", title_align="left", border_style="blue"))
-    disease_label = clean_label(config['disease'])
-    comorbidity_label = clean_label(config['comorbidity'])
-    drug_display_name = config.get("drug_group_name", ', '.join([clean_label(d) for d in config['drugs']]))
-    if config.get("drug_group_name"):
-        drug_display_name = clean_label(drug_display_name)
-    
-    # --- Standardize cohort names for consistent plotting ---
-    # Define the dynamic names as they are created in the prevalence calculation step
-    dynamic_c1 = disease_label
-    dynamic_c2 = f"{disease_label} + {comorbidity_label}"
-    dynamic_c3 = f"{disease_label} + {drug_display_name}"
-    dynamic_c4 = f"{disease_label} + {comorbidity_label} + {drug_display_name}"
-
-    # Map the dynamic names to the desired standard, consistent names
-    cohort_map = {
-        "population": "general population",
-        dynamic_c1: "disease",
-        dynamic_c2: "disease + comorbidity",
-        dynamic_c3: "disease + drug",
-        dynamic_c4: "disease + comorbidity + drug",
-    }
-    
-    # Define the plotting order using the new standard names
-    COHORT_ORDER = ["general population", "total", "disease", "disease + drug", "disease + comorbidity", "disease + comorbidity + drug"]
-    
-    available_AEs_pop = set(pop_ae_df["adverse_event"].unique())
-    requested_AEs = set(prevalence_results["adverse_event"].unique())
-    valid_AEs = requested_AEs & available_AEs_pop
-
-    missing_aes = requested_AEs - valid_AEs
-    for ae in missing_aes:
-        console.print(f"  [bold yellow]WARNING:[/] Population prevalence data not available for '{ae}'. It will be excluded from plots.")
-    
-    res_use = prevalence_results[prevalence_results["adverse_event"].isin(valid_AEs)]
-    pop_use = pop_ae_df[pop_ae_df["adverse_event"].isin(valid_AEs)]
-    
-    results_pop = pd.concat([res_use, pop_use], ignore_index=True)
-
-    # Create the new standardized cohort column using the map
-    results_pop["cohort_standard"] = results_pop["cohort"].map(cohort_map)
-    
-    # Fill in non-mapped values (e.g., "total") from the original column
-    results_pop["cohort_standard"] = results_pop["cohort_standard"].fillna(results_pop["cohort"])
-    
-    # Apply the categorical ordering to the new column
-    results_pop["cohort_standard"] = pd.Categorical(results_pop["cohort_standard"], categories=COHORT_ORDER, ordered=True)
-    results_pop = results_pop.sort_values(["adverse_event", "cohort_standard"]).reset_index(drop=True)
-    results_pop.to_csv(save_dir / "prevalence_with_population.csv", index=False)
-    
-    plot_dir = save_dir / "barplots"
-    plot_dir.mkdir(parents=True, exist_ok=True)
-
-    # Filter out the "total" cohort for plotting
-    plot_data = results_pop[~(results_pop["cohort_standard"] == "total")].copy()
-    
-    bar_colors = ["#e5e5e5", "#e9c46a", "#f4a261", "#f4a261", "#e76f51"]
-
-    for ae, g in track(plot_data.groupby("adverse_event", sort=True), description="Generating plots..."):
-        g = g.sort_values("cohort_standard")
-        fig, ax = plt.subplots(figsize=(5, 4))
-        x = np.arange(len(g))
-        
-        # Prepare data for plotting and labeling
-        numerators = g["n_with_AE"].values
-        denominators = g["denominator"].values
-        percentages = g["prevalence_pct"].astype(float).values
-        
-        bars = ax.bar(x, percentages, zorder=3, color=bar_colors, edgecolor="black")
-        add_value_labels(ax, bars, numerators, denominators, percentages)
-        ax.set_xticks(x)
-        ax.set_xticklabels([format_cohort_label(c) for c in g["cohort_standard"].astype(str)], ha="center")
-        ax.set_ylabel("Prevalence (%)", fontsize=12)
-        ax.set_xlabel("Cohort", fontsize=12)
-        
-        # title_text = f"$\\bf{{Adverse\\ event:}}$ {str(ae).lower()}\n$\\bf{{Disease:}}$ {disease_label}\n$\\bf{{Comorbidity:}}$ {comorbidity_label}\n$\\bf{{Drug:}}$ {drug_display_name}"
-        title_text = f"{str(ae).lower()}\nin {disease_label} + {comorbidity_label} + {drug_display_name}"
-        ax.set_title(title_text, loc='left', pad=20, fontsize=12)
-        
-        ax.grid(axis='y', linestyle=":", linewidth=0.5, zorder=0)
-        ax.margins(y=0.25) # Increase top margin to ensure labels fit
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        fig.tight_layout()
-        
-        plot_base_name = slugify(f"{ae}-prevalence-plot")
-        fig.savefig(plot_dir / f"{plot_base_name}.png", dpi=300)
-        fig.savefig(plot_dir / f"{plot_base_name}.pdf")
-        # plt.close(fig)
-    
-    console.print(f"  [bold green]Saved[/bold green] barplots.")
-
 # --- Main Execution Block ---
 
 def process_configuration(config: dict, con: duckdb.DuckDBPyConnection, group_dfs: dict, pop_ae_df: pd.DataFrame):
@@ -815,9 +722,13 @@ def process_configuration(config: dict, con: duckdb.DuckDBPyConnection, group_df
     prevalence_results = calculate_prevalence_stats(con, config, adverse_events)
     if not prevalence_results.empty:
         smart_save_results(prevalence_results, save_dir / "prevalence_results.csv")
-        generate_plots(prevalence_results, pop_ae_df, config, save_dir)
+        generate_bar_plots(prevalence_results, pop_ae_df, config, save_dir)
     else:
         console.print("  [yellow]Skipping plotting due to empty prevalence results.[/yellow]")
+    
+    # Generate cohort diagnostic plots
+    plot_drug_distribution(con, config, adverse_events, save_dir)
+    plot_follow_up_time(con, config, adverse_events, save_dir)
 
 def main():
     """Main function to orchestrate the analysis runs."""
@@ -840,8 +751,8 @@ def main():
                     console.print(f"[yellow]NOTE: '{path.name}' not found. Regression will only adjust for age, sex, and SES.[/yellow]")
                     group_dfs[name] = pd.DataFrame() # Create empty df to avoid key errors
                 else:
-                     console.print(f"[bold red]ERROR:[/] Essential definition file not found: {path}. Exiting.")
-                     return
+                    console.print(f"[bold red]ERROR:[/] Essential definition file not found: {path}. Exiting.")
+                    return
     console.print("Shared definition files loaded.")
     
     with console.status("[b]Loading population AE prevalence data...[/b]", spinner="dots"):

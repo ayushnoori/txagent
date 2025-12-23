@@ -61,7 +61,7 @@ CONFIGURATIONS = [
         "drug_group_name": "beta-blocker",
         "aes": ["acute kidney failure", "unspecified acute kidney failure", "hyperkalemia", "cardiac dysrhythmia"],
         "negative_controls": ["corneal abrasion", "gingivitis", "insect bite"],
-        "enabled": True,
+        "enabled": False,
     },
     # Success
     {
@@ -71,7 +71,7 @@ CONFIGURATIONS = [
         "drug_group_name": "statin",
         "aes": ["liver failure"],
         "negative_controls": ["corneal abrasion", "gingivitis", "insect bite"],
-        "enabled": True,
+        "enabled": False,
     },
     # Success
     {
@@ -80,7 +80,7 @@ CONFIGURATIONS = [
         "drugs": ["sitagliptin", "saxagliptin", "linagliptin", "vildagliptin"],
         "drug_group_name": "DPP-4 inhibitor",
         "aes": ["hepatocellular carcinoma"],
-        "enabled": True,
+        "enabled": False,
     },
     # Success
     {
@@ -89,7 +89,7 @@ CONFIGURATIONS = [
         "drugs": ["salmeterol", "formoterol", "indacaterol", "olodaterol"],
         "drug_group_name": "long-acting beta-2 agonist",
         "aes": ["stroke"],
-        "enabled": True,
+        "enabled": False,
     },
     # Success for RF, not pancreatitis
     # Pancreatitis OR success, prevalence failure
@@ -98,7 +98,7 @@ CONFIGURATIONS = [
         "comorbidity": "chronic kidney disease",
         "drugs": ["metformin"],
         "aes": ["acute pancreatitis", "respiratory failure"],
-        "enabled": True,
+        "enabled": False,
     },
 
 
@@ -112,7 +112,7 @@ CONFIGURATIONS = [
         "drugs": ["captopril", "enalapril", "ramipril", "benazepril", "fosinopril", "cilazapril"],
         "drug_group_name": "ACE inhibitor",
         "aes": ["acute kidney failure", "hyperkalemia"],
-        "enabled": True,
+        "enabled": False,
     },
     # Positive control: weak success
     {
@@ -120,7 +120,7 @@ CONFIGURATIONS = [
         "comorbidity": "chronic kidney disease",
         "drugs": ["metformin"],
         "aes": ["acidosis"],
-        "enabled": True,
+        "enabled": False,
     },
     # Positive control: weak success
     {
@@ -129,7 +129,7 @@ CONFIGURATIONS = [
         "drugs": ["atorvastatin", "simvastatin", "rosuvastatin", "pravastatin", "lovastatin", "fluvastatin", "cerivastatin"],
         "drug_group_name": "statin",
         "aes": ["rhabdomyolysis"],
-        "enabled": True,
+        "enabled": False,
     },
     # Positive control: success
     {
@@ -138,7 +138,7 @@ CONFIGURATIONS = [
         "drugs": ["salbutamol", "terbutaline", "salmeterol", "formoterol", "indacaterol", "olodaterol"],
         "drug_group_name": "beta-2 agonist",
         "aes": ["angina"],
-        "enabled": True,
+        "enabled": False,
     },
 
 
@@ -165,6 +165,6 @@ CONFIGURATIONS = [
         "drugs": ["semaglutide", "liraglutide", "dulaglutide", "exenatide", "lixisenatide"],
         "drug_group_name": "GLP-1 receptor agonist",
         "aes": ["stroke", "myocardial infarction", "heart failure"],
-        "enabled": True,
+        "enabled": False,
     }
 ]
